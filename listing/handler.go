@@ -1,100 +1,66 @@
-package listing 
+package listing
 
 import (
-	"strconv"
-
 	"github.com/gofiber/fiber/v2"
+	"github.com/raafly/online-food-service/helper"
 )
 
-type ProductController interface {
-	GetAll(c *fiber.Ctx) error
+type ProductHandler interface {
 	Create(c *fiber.Ctx) error 
+	GetAll(c *fiber.Ctx) error
 	GetById(c *fiber.Ctx) error 
-	Update(c *fiber.Ctx) error 
 	Delete(c *fiber.Ctx) error
 }
 
-type ProductControllerImpl struct {
-	ProductService service.ProductService
+type ProductHandlerImpl struct {
+	port ProductService
 }
 
-func NewProductController(productService service.ProductService) *ProductControllerImpl {
-	return &ProductControllerImpl{
-		ProductService: productService,
+func NewProductHandler(port ProductService) *ProductHandlerImpl {
+	return &ProductHandlerImpl{
+		port: port,
 	}
 }
 
-func (controller *ProductControllerImpl) GetAll(c *fiber.Ctx) error  {
-	product := controller.ProductService.GetAll(r.Context())
-	webResponse := web.WebResponse {
-		Code: 201,
-		Status: "OK",
-		Data: product,
+func (h *ProductHandlerImpl) Create(c *fiber.Ctx) error {
+	req := new(Products)
+	c.BodyParser(req)
+	
+	err := h.port.Create(req)
+	if err != nil {
+		return c.Status(400).JSON(err)
 	}
 
-	helper.WriteToRequestBody(w, webResponse)
+	return c.Status(201).JSON(helper.NewCreated())
 }
 
-func (controller *ProductControllerImpl) Create(c *fiber.Ctx) error {
-	productCreateRequest := web.ProductsRequest{}
-	helper.ReadFromRequestBody(r, &productCreateRequest)
+func (h *ProductHandlerImpl) GetById(c *fiber.Ctx) error {
+	id := c.Params("id")
 
-	product := controller.ProductService.Create(r.Context(), productCreateRequest)
-	webResponse := web.WebResponse {
-		Code: 201,
-		Status: "OK",
-		Data: product,
+	response, err := h.port.GetById(id)
+	if err != nil {
+		return c.Status(404).JSON(helper.NewNotFoundError())
 	}
 
-	helper.WriteToRequestBody(w, webResponse)
+	return c.Status(200).JSON(helper.NewSuccess(response))
 }
 
-func (controller *ProductControllerImpl) GetById(c *fiber.Ctx) error {
-	productId := params.ByName("productId")
-	id, err := strconv.Atoi(productId)
-	helper.PanicIfError(err)
+func (h *ProductHandlerImpl) Delete(c *fiber.Ctx) error {
+	id := c.Params("id")
 
-	product := controller.ProductService.GetById(r.Context(), id)
-	webResponse := web.WebResponse {
-		Code: 201,
-		Status: "OK",
-		Data: product,
+	err := h.port.Delete(id)
+	if err != nil {
+		return c.Status(404).JSON(helper.NewNotFoundError())
 	}
 
-	helper.WriteToRequestBody(w, webResponse)
+	return c.Status(200).JSON(helper.NewSuccess(nil))		
 }
 
-func (controller *ProductControllerImpl) Update(c *fiber.Ctx) error {
-	productUpdateRequest := web.ProductUpdateRequest{}
-	helper.ReadFromRequestBody(r, &productUpdateRequest)
-
-	productId := params.ByName("productId")
-	id, err := strconv.Atoi(productId)
-	helper.PanicIfError(err)
-
-	productUpdateRequest.Id = id
-
-	product := controller.ProductService.Update(r.Context(), productUpdateRequest)
-	webResponse := web.WebResponse {
-		Code: 201,
-		Status: "OK",
-		Data: product,
-		Message: "SUCCES UPDATE",
+func (h *ProductHandlerImpl) GetAll(c *fiber.Ctx) error  {
+	response, err := h.port.GetAll()
+	if err != nil {
+		return c.Status(500).JSON(helper.NewInternalServerError())
 	}
 
-	helper.WriteToRequestBody(w, webResponse)
-}
-
-func (controller *ProductControllerImpl) Delete(c *fiber.Ctx) error {
-	productId := params.ByName("productId")
-	id, err := strconv.Atoi(productId)
-	helper.PanicIfError(err)
-
-	controller.ProductService.Delete(r.Context(), id)
-	webResponse := web.WebResponse {
-		Code: 201,
-		Status: "OK",
-	}
-
-	helper.WriteToRequestBody(w, webResponse)
+	return c.Status(200).JSON(helper.NewSuccess(response))
 }

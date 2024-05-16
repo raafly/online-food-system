@@ -2,32 +2,32 @@ package listing
 
 import (
 	"context"
-	"database/sql"
 	"time"
 
 	"github.com/raafly/online-food-service/helper"
+	"gorm.io/gorm"
 )
 
 type ProductService interface {
-	GetAll(ctx context.Context) ([]Products, error)
-	Create(ctx context.Context, req *RequestProduct) error
-	GetById(ctx context.Context, productId int) (*ResponseProduct, error)
-	Delete(ctx context.Context, productInt int) error
+	GetAll() ([]Products, error)
+	Create(req *Products) error
+	GetById(productId string) (*Products, error)
+	Delete(string) error
 }
 
 type ProductServiceImpl struct {
 	ProductRepository ProductRepository
-	DB                *sql.DB
+	DB                *gorm.DB
 }
 
-func NewProductService(productRepository ProductRepository, DB *sql.DB) *ProductServiceImpl {
+func NewProductService(productRepository ProductRepository, DB *gorm.DB) *ProductServiceImpl {
 	return &ProductServiceImpl{
 		ProductRepository: productRepository,
 		DB:                DB,
 	}
 }
 
-func (ser *ProductServiceImpl) GetAll(ctx context.Context) ([]Products, error) {
+func (ser *ProductServiceImpl) GetAll() ([]Products, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -39,7 +39,7 @@ func (ser *ProductServiceImpl) GetAll(ctx context.Context) ([]Products, error) {
 	return response, nil
 }
 
-func (ser *ProductServiceImpl) Create(ctx context.Context, req *Products) error {
+func (ser *ProductServiceImpl) Create(req *Products) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -50,7 +50,7 @@ func (ser *ProductServiceImpl) Create(ctx context.Context, req *Products) error 
 	return nil
 }
 
-func (ser *ProductServiceImpl) GetById(ctx context.Context, productId int) (*Products, error) {
+func (ser *ProductServiceImpl) GetById(productId string) (*Products, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -62,7 +62,7 @@ func (ser *ProductServiceImpl) GetById(ctx context.Context, productId int) (*Pro
 	return res, nil
 }
 
-func (ser *ProductServiceImpl) Delete(ctx context.Context, productId int) error {
+func (ser *ProductServiceImpl) Delete(productId string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -72,5 +72,4 @@ func (ser *ProductServiceImpl) Delete(ctx context.Context, productId int) error 
 	}
 
 	return nil
-
 }

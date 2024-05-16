@@ -7,9 +7,9 @@ import (
 
 type ProductRepository interface {
 	Create(ctx context.Context, data *Products) error
-	Delete(ctx context.Context, productId int) error
+	Delete(ctx context.Context, productId string) error
 	GetAllProducts(ctx context.Context) ([]Products, error)
-	GetById(ctx context.Context, productId int) (*Products, error)
+	GetById(ctx context.Context, productId string) (*Products, error)
 }
 
 type ProductRepositoryImpl struct {
@@ -33,7 +33,7 @@ func (r *ProductRepositoryImpl) GetAllProducts(ctx context.Context) ([]Products,
     return products, nil
 }
 
-func (r *ProductRepositoryImpl) GetById(ctx context.Context, productId int) (*Products, error) {
+func (r *ProductRepositoryImpl) GetById(ctx context.Context, productId string) (*Products, error) {
 	var product Products
 	err := r.db.WithContext(ctx).First(&Products{}, "id", productId).Error	
 	if err != nil {
@@ -43,7 +43,7 @@ func (r *ProductRepositoryImpl) GetById(ctx context.Context, productId int) (*Pr
 	return &product, nil
 }
 
-func (r *ProductRepositoryImpl) Delete(ctx context.Context, productId int) error {
+func (r *ProductRepositoryImpl) Delete(ctx context.Context, productId string) error {
 	err := r.db.Where("id = ?", productId).Delete(&Products{}).Error
 	return err
 
