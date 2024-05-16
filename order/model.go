@@ -1,27 +1,14 @@
 package order
 
-import (
-	"time"
-)
-
-type Orders struct {
-	Id_order		int
-	Id_user			int
-	Id_product		int
-	Total			uint
-	Note			string
-	Status			string
-	Order_date		time.Time
+type Order struct {
+	ID       string `json:"id"`
+	Customer string `json:"customer"`
+	Item     string `json:"item"`
+	Price    int    `json:"price"`
+	Quantity int    `json:"quantity"`
 }
 
-type Orders_detail struct {
-	Id_order		int
-	Id_product		int
-	Id_user 		int
-	Address			string
-	No_telp			string
-	Name			string
-	Price			int
-	Quantity		int
-	Status			string
+type UpdateQuantity struct {
+	ID       int `json:"id"`
+	Quantity int `json:"quantity"`
 }

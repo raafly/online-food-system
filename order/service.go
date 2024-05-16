@@ -2,84 +2,74 @@ package order
 
 import (
 	"context"
-	"database/sql"
+	"log"
+	"time"
 
-	"github.com/go-playground/validator/v10"
-	
+	"github.com/raafly/online-food-service/helper"
 )
 
 type OrderService interface {
-	Create(ctx context.Context, request web.OrderCreateRequest) web.OrderSuccess
-	Update(ctx context.Context, request web.OrderUpateRequest)
-	Delete(ctx context.Context, orderId int)
-	GetById(ctx context.Context, orderId int) web.OrderDetailResponse
+	create(req *Order) error
+	getOrderByID(id int) (*Order, error)
+	updateQuantity(id, quantity int) error
+	cancel(id int) error
 }
 
 type OrderServiceImpl struct {
-	OrderRepository		repository.OrderRepository
-	DB 					*sql.DB
-	Validate			*validator.Validate
+	port OrderRepository
 }
 
-func NewOrderServiceImpl(orderRepository repository.OrderRepository, DB *sql.DB, validate *validator.Validate) *OrderServiceImpl {
-	return &OrderServiceImpl{
-		OrderRepository: orderRepository,
-		DB: DB,
-		Validate: validate,
-	}
+func NewOrderService(port OrderRepository) OrderService {
+	return &OrderServiceImpl{port: port}
 }
 
-func (service *OrderServiceImpl) Create(ctx context.Context, request web.OrderCreateRequest) web.OrderSuccess {
-	err := service.Validate.Struct(request)
-	helper.PanicIfError(err)
+func (s *OrderServiceImpl) create(req *Order) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
-	tx, err := service.DB.Begin()
-	defer helper.CommitOrRollback(tx)
-	helper.PanicIfError(err)
-
-	order := domain.Orders {
-		Id_order: request.Id_order,
-		Id_user: request.Id_user,
-		Id_product: request.Id_product,		
-		Note: request.Note,
+	err := s.port.create(ctx, req)
+	if err != nil {
+		log.Println(err)
+		return helper.NewBadRequestError("input right data")
 	}
 
-	order = service.OrderRepository.Create(ctx, tx, order)
-	return helper.ToOrderReponse(order)
+	return nil
 }
 
-func (service *OrderServiceImpl) GetById(ctx context.Context, orderId int) web.OrderDetailResponse {
-	tx, err := service.DB.Begin()
-	defer helper.CommitOrRollback(tx)
-	helper.PanicIfError(err)
 
-	orderDetail, err := service.OrderRepository.GetById(ctx, tx, orderId)
-	helper.PanicIfError(err)
+func (s *OrderServiceImpl) getOrderByID(id int) (*Order, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
-	return helper.ToOrderDetailResponse(orderDetail)	
-}
-
-func (service *OrderServiceImpl) Update(ctx context.Context, request web.OrderUpateRequest) {
-	err := service.Validate.Struct(request)
-	helper.PanicIfError(err)
-
-	tx, err := service.DB.Begin()
-	defer helper.CommitOrRollback(tx)
-	helper.PanicIfError(err)
-
-	order := domain.Orders_detail {
-		Id_order: request.Id_order,
-		Quantity: request.Quantity,
+	resp, err := s.port.getOrderByID(ctx, id)
+	if err != nil {
+		log.Println(err)
+		return nil, helper.NewNotFoundError("order not found")
 	}
-	
-	service.OrderRepository.Update(ctx, tx, order)
+
+	return resp, nil
 }
 
-func (service *OrderServiceImpl) Delete(ctx context.Context, orderId int) { 
-	tx, err := service.DB.Begin()
-	defer helper.CommitOrRollback(tx)
-	helper.PanicIfError(err)
-	
-	service.OrderRepository.Delete(ctx, tx, orderId)
-}
+func (s *OrderServiceImpl )updateQuantity(id, quantity int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
+	err := s.port.updateQuantity(ctx, id, quantity)
+	if err != nil {
+		log.Println(err)
+		return helper.NewInternalServerError()
+	}
+
+	return nil
+}
+func (s *OrderServiceImpl) cancel(id int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := s.port.cancel(ctx, id)
+	if err != nil {
+		return helper.NewNotFoundError("order not found")
+	}
+
+	return nil
+}
