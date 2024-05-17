@@ -39,7 +39,7 @@ func (h *ProductHandlerImpl) GetById(c *fiber.Ctx) error {
 
 	response, err := h.port.GetById(id)
 	if err != nil {
-		return c.Status(404).JSON(helper.NewNotFoundError())
+		return c.Status(404).JSON(helper.NewNotFoundError("id product not found"))
 	}
 
 	return c.Status(200).JSON(helper.NewSuccess(response))
@@ -50,7 +50,7 @@ func (h *ProductHandlerImpl) Delete(c *fiber.Ctx) error {
 
 	err := h.port.Delete(id)
 	if err != nil {
-		return c.Status(404).JSON(helper.NewNotFoundError())
+		return c.Status(404).JSON(helper.NewNotFoundError("id product not found"))
 	}
 
 	return c.Status(200).JSON(helper.NewSuccess(nil))		

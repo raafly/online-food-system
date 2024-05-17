@@ -16,22 +16,22 @@ type ProductService interface {
 }
 
 type ProductServiceImpl struct {
-	ProductRepository ProductRepository
-	DB                *gorm.DB
+	port ProductRepository
+	DB   *gorm.DB
 }
 
-func NewProductService(productRepository ProductRepository, DB *gorm.DB) *ProductServiceImpl {
+func NewProductService(port ProductRepository, DB *gorm.DB) *ProductServiceImpl {
 	return &ProductServiceImpl{
-		ProductRepository: productRepository,
-		DB:                DB,
+		port: port,
+		DB:   DB,
 	}
 }
 
-func (ser *ProductServiceImpl) GetAll() ([]Products, error) {
+func (s *ProductServiceImpl) GetAll() ([]Products, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	response, err := ser.ProductRepository.GetAllProducts(ctx)
+	response, err := s.port.GetAllProducts(ctx)
 	if err != nil {
 		return nil, helper.NewInternalServerError()
 	}
@@ -39,36 +39,36 @@ func (ser *ProductServiceImpl) GetAll() ([]Products, error) {
 	return response, nil
 }
 
-func (ser *ProductServiceImpl) Create(req *Products) error {
+func (s *ProductServiceImpl) Create(req *Products) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err := ser.ProductRepository.Create(ctx, req)
+	err := s.port.Create(ctx, req)
 	if err != nil {
 		return helper.NewInternalServerError()
 	}
 	return nil
 }
 
-func (ser *ProductServiceImpl) GetById(productId string) (*Products, error) {
+func (s *ProductServiceImpl) GetById(productId string) (*Products, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	res, err := ser.ProductRepository.GetById(ctx, productId)
+	res, err := s.port.GetById(ctx, productId)
 	if err != nil {
-		return nil, helper.NewNotFoundError()
+		return nil, helper.NewNotFoundError("id not found")
 	}
 
 	return res, nil
 }
 
-func (ser *ProductServiceImpl) Delete(productId string) error {
+func (s *ProductServiceImpl) Delete(productId string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err := ser.ProductRepository.Delete(ctx, productId)
+	err := s.port.Delete(ctx, productId)
 	if err != nil {
-		return helper.NewNotFoundError()
+		return helper.NewNotFoundError("id not found")
 	}
 
 	return nil

@@ -40,19 +40,19 @@ func NewCreated() error {
 	}
 }
 
-func NewNotFoundError() error {
+func NewNotFoundError(message string) error {
 	return &ErrResponse{
 		Code:    404,
 		Status:  false,
-		Message: "id not found",
+		Message: message,
 	}
 }
 
-func NewBadRequestError() error {
+func NewBadRequestError(message string) error {
 	return &ErrResponse{
 		Code:    400,
 		Status:  false,
-		Message: "BAD REQUEST",
+		Message: message,
 	}
 }
 

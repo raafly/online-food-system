@@ -1,11 +1,12 @@
 package auth
 
+import "time"
+
 type Customers struct {
-	Id 		 	int	 
+	ID 		 	string
 	Username 	string	 
 	Email	 	string	 
-	Password 	string	 
-	Address	 	string	 
-	No_telp  	string	 
-	Role 	 	string	 
+	Password 	string	
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }

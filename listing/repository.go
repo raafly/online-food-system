@@ -2,6 +2,7 @@ package listing
 
 import (
 	"context"
+
 	"gorm.io/gorm"
 )
 
@@ -26,16 +27,16 @@ func (r *ProductRepositoryImpl) Create(ctx context.Context, data *Products) erro
 }
 
 func (r *ProductRepositoryImpl) GetAllProducts(ctx context.Context) ([]Products, error) {
-    var products []Products
-    if err := r.db.Find(&products).Error; err != nil {
-        return nil, err
-    }
-    return products, nil
+	var products []Products
+	if err := r.db.Find(&products).Error; err != nil {
+		return nil, err
+	}
+	return products, nil
 }
 
 func (r *ProductRepositoryImpl) GetById(ctx context.Context, productId string) (*Products, error) {
 	var product Products
-	err := r.db.WithContext(ctx).First(&Products{}, "id", productId).Error	
+	err := r.db.WithContext(ctx).First(&Products{}, "id", productId).Error
 	if err != nil {
 		return nil, err
 	}

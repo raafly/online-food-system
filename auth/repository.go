@@ -2,79 +2,45 @@ package auth
 
 import (
 	"context"
-	"database/sql"
-	"errors"
+
+	"gorm.io/gorm"
 )
 
 type CustomerRepository interface {
-	Register(ctx context.Context, tx *sql.Tx, customer Customers) Customers
-	Login(ctx context.Context, db *sql.DB, customer Customers) (Customers, error)
-	Update(ctx context.Context, tx *sql.Tx, customer Customers) Customers
-	Delete(ctx context.Context, tx *sql.Tx, customerId int) 
-	FindById(ctx context.Context, db *sql.DB, customerId int) (Customers, error)
+	create(ctx context.Context, req *Customers) error
+	findByEmail(ctx context.Context, req *Customers) (*Customers, error)
+	findById(ctx context.Context, id string) (*Customers, error)
 }
 
 type CustomerRepositoryImpl struct {
+	db *gorm.DB
 }
 
-func NewCustomerRepository() *CustomerRepositoryImpl {
-	return &CustomerRepositoryImpl{}
+func NewCustomerRepository(db *gorm.DB) *CustomerRepositoryImpl {
+	return &CustomerRepositoryImpl{db: db}
 }
 
-func (repository *CustomerRepositoryImpl) Register(ctx context.Context, tx *sql.Tx, customer domain.Customers) domain.Customers {
-	SQL := "INSERT INTO customers(username, email, password, address, no_telp) Values(?, ?, ?, ?, ?)"
-	result, err := tx.ExecContext(ctx, SQL, customer.Username, customer.Email, customer.Password, customer.Address, customer.No_telp)
-	helper.PanicIfError(err) 
-
-	id, err := result.LastInsertId()
-	helper.PanicIfError(err)
-
-	customer.Id = int(id)
-	return customer 
+func (r *CustomerRepositoryImpl) create(ctx context.Context, req *Customers) error {
+	err := r.db.WithContext(ctx).Create(&req).Error
+	return err
 }
 
-func (repository *CustomerRepositoryImpl) Login(ctx context.Context, db *sql.DB, customer domain.Customers) (domain.Customers, error) {
-	SQL := "SELECT email, password, role FROM customers WHERE email = ?"
-	rows, err := db.QueryContext(ctx, SQL, customer.Email)
-	helper.PanicIfError(err) 
-	defer rows.Close()
-
-	customer = domain.Customers{}
-	if rows.Next() {
-		err := rows.Scan(&customer.Email, &customer.Password, &customer.Role)
-		helper.PanicIfError(err)
-		return customer, nil
-	} else {
-		return customer, errors.New("user is not found")
+func (r *CustomerRepositoryImpl) findByEmail(ctx context.Context, req *Customers) (*Customers, error) {
+	var customer Customers
+	err := r.db.WithContext(ctx).Where("email = ?", req.Email).Take(&customer).Error
+	if err != nil {
+		return nil, err
 	}
+
+	return &customer, nil
 }
 
-func (repository *CustomerRepositoryImpl) Update(ctx context.Context, tx *sql.Tx, customer domain.Customers) domain.Customers {
-	SQL := "UPDATE customers SET address = ? WHERE id = ?"
-	_, err := tx.ExecContext(ctx, SQL, customer.Address, customer.Id)
-	helper.PanicIfError(err)
-
-	return customer
-}
-
-func (repository *CustomerRepositoryImpl) Delete(ctx context.Context, tx *sql.Tx, customerId int) {
-	SQL := "DELETE from customers WHERE id = ?"
-	_, err := tx.ExecContext(ctx, SQL, customerId)
-	helper.PanicIfError(err)
-}
-
-func (repository *CustomerRepositoryImpl) FindById(ctx context.Context, db *sql.DB, customerId int) (domain.Customers, error) {
-	SQL := "SELECT id, username, email, address, no_telp FROM customers WHERE id = ?"
-	rows, err := db.QueryContext(ctx, SQL, customerId)
-	helper.PanicIfError(err)
-	defer rows.Close()
-
-	customer := domain.Customers{}
-	if rows.Next() {
-		err := rows.Scan(&customer.Id, &customer.Username, &customer.Email, &customer.Address, &customer.No_telp)
-		helper.PanicIfError(err)
-		return customer, nil
-	} else {
-		return customer, errors.New("account not found")
+func (r *CustomerRepositoryImpl) findById(ctx context.Context, id string) (*Customers, error) {
+	var customer Customers
+	err := r.db.WithContext(ctx).Where("id = ?").Take(&customer).Error
+	if err != nil {
+		return nil, err
 	}
+
+	return &customer, nil
 }

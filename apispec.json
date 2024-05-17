@@ -1,25 +1,17 @@
 {
   "openapi": "3.0.2",
   "info": {
-    "title": "API For Toko Online",
-    "description": "API untuk toko online",
-    "version": "1.0",
-    "contact": {
-        "name": "Rafly Nur Ramadhani",
-        "email": "rafliexecutor375@gmail.com",
-        "url": "https://www.raaflynr.com"
-    }
+    "title": "API For Online Food",
+    "description": "API documentation for online food",
+    "version": "1.0"
   },
   "servers": [{ "url": "http://localhost:3000/api" }],
   "paths": { 
     "/register" : {
         "post" : {
             "tags": ["customers"],
-            "security": [{
-                "customerAuth": []
-            }],
-            "summary": "user membuat account",
-            "description": "Digunakan untuk mendaftarkan pengguna baru",
+            "summary": "create account",
+            "description": "create new account",
             "requestBody" : {
                 "required": true,
                 "content": {
@@ -29,17 +21,14 @@
                             "properties": {
                                 "username" : {
                                     "type": "string",
-                                    "required": true,
                                     "minLength": 10
                                 },
                                 "email" : {
                                     "type": "string",
-                                    "required": true,
                                     "minLength": 10
                                 },
                                 "password" : {
                                     "type": "string",
-                                    "required": true,
                                     "minLength": 10
                                 }
                             }
@@ -179,84 +168,6 @@
                 },
                 "404" : {
                     "description": "account not found"
-                },
-                "500" : {
-                    "description": "server is busy"
-                }
-            }
-
-        },
-        "put" : {
-            "tags": ["customers"],
-            "summary": "update account",
-            "security": [{
-                "customerAuth": []
-            }],
-            "parameters": [
-                {
-                    "name": "customerId",
-                    "in": "path",
-                    "description": "update account customer"
-                }
-            ],
-            "requestBody" : {
-                "content": {
-                    "application/json" : {
-                        "schema" : {
-                            "type": "object",
-                            "properties": {
-                                "address" : {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "responses": {
-                "201" : {
-                    "description": "succes update account",
-                    "content": {
-                        "application/json" : {
-                            "schema" : {
-                                "type": "object",
-                                "properties": {
-                                    "address" : {
-                                        "type": "string"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "404" : {
-                    "description": "account not found"
-                },
-                "500" : {
-                    "description": "server is busy"
-                }
-            }
-        },
-        "delete" : {
-            "tags": ["customers"],
-            "security": [{
-                "customerAuth": []
-            }],
-            "summary": "delete account",
-            "description": "for delete account",
-            "parameters": [
-                {
-                    "name": "customerId",
-                    "in": "path",
-                    "description": "delete account customer"
-                }
-            ],
-            "responses": {
-                "201" : {
-                    "description": "succes delete account"
-                },
-                "404" : {
-                    "description": "user not found"
                 },
                 "500" : {
                     "description": "server is busy"
