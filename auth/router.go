@@ -13,8 +13,8 @@ func NewCustomerRoutes(app *fiber.App, db *gorm.DB) {
 	serv := NewCustomerService(repo, db, pass)
 	handler := NewCustomerHandler(serv)
 
-	cs := app.Group("/customer")
+	cs := app.Group("/api")
 	cs.Post("/register", handler.Register)
 	cs.Post("/login", handler.Login)
-	cs.Get("/information", handler.FindById)
+	cs.Get("/information/:userId", handler.FindById)
 }

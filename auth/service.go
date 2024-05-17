@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/raafly/online-food-service/helper"
 	"gorm.io/gorm"
 )
@@ -34,6 +35,8 @@ func (s *CustomerServiceImpl) register(req *Customers ) error {
 	defer cancel()
 
 	req.Password = s.pass.HashPassword(req.Password)
+
+	req.ID = uuid.NewString()
 
 	err := s.port.create(ctx, req)
 	if err != nil {

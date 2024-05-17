@@ -37,7 +37,7 @@ func (r *CustomerRepositoryImpl) findByEmail(ctx context.Context, req *Customers
 
 func (r *CustomerRepositoryImpl) findById(ctx context.Context, id string) (*Customers, error) {
 	var customer Customers
-	err := r.db.WithContext(ctx).Where("id = ?").Take(&customer).Error
+	err := r.db.WithContext(ctx).Where("id = ?", id).Take(&customer).Error
 	if err != nil {
 		return nil, err
 	}

@@ -35,7 +35,7 @@ func NewSuccess(data interface{}) error {
 func NewCreated() error {
 	return &Response{
 		Code:    201,
-		Status:  false,
+		Status:  true,
 		Message: "CREATED",
 	}
 }
@@ -43,7 +43,7 @@ func NewCreated() error {
 func NewNotFoundError(message string) error {
 	return &ErrResponse{
 		Code:    404,
-		Status:  false,
+		Status:  true,
 		Message: message,
 	}
 }

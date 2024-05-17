@@ -47,7 +47,7 @@ func (h *CustomerHandlerImpl) Login(c *fiber.Ctx) error {
 }
 
 func (h *CustomerHandlerImpl) FindById(c *fiber.Ctx) error {
-	id := c.Params("id")
+	id := c.Params("userId")
 
 	resp, err := h.port.findById(id)
 	if err != nil {
